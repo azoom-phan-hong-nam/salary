@@ -110,6 +110,31 @@
           </div>
         </div>
 
+        <!-- Mức phí công đoàn -->
+        <div class="mb-4 sm:mb-6">
+          <label class="block text-xs sm:text-sm font-medium mb-3">Mức phí công đoàn:</label>
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-6">
+            <label class="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                v-model="unionFeeRate"
+                value="old"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
+              />
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">Trước 1/7/2025 (1%)</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                v-model="unionFeeRate"
+                value="new"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
+              />
+              <span class="ml-2 text-gray-700 text-sm sm:text-base font-semibold text-green-600">Từ 1/7/2025 (0.5%)</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Mức lương đóng bảo hiểm -->
         <div class="mb-4 sm:mb-6">
           <label class="block text-xs sm:text-sm font-medium mb-3">Mức lương đóng bảo hiểm:</label>
@@ -222,6 +247,10 @@
             <span class="font-semibold text-red-600">-{{ formatCurrency(results.insurance) }}</span>
           </div>
           <div class="flex justify-between py-2 border-b text-sm sm:text-base">
+            <span class="text-gray-600">Phí công đoàn ({{ unionFeeRate === 'new' ? '0.5%' : '1%' }}):</span>
+            <span class="font-semibold text-red-600">-{{ formatCurrency(results.unionFee) }}</span>
+          </div>
+          <div class="flex justify-between py-2 border-b text-sm sm:text-base">
             <span class="text-gray-600">Thu nhập trước thuế:</span>
             <span class="font-semibold">{{ formatCurrency(results.beforeTax) }}</span>
           </div>
@@ -255,6 +284,7 @@ const regulation = ref('2026')
 const income = ref('')
 const formattedIncome = ref('')
 const dependents = ref(0)
+const unionFeeRate = ref('new') // Mặc định là mức mới từ 1/7/2025
 const insuranceType = ref('official')
 const customInsurance = ref('')
 const formattedCustomInsurance = ref('')
@@ -263,6 +293,7 @@ const showResults = ref(false)
 const results = ref({
   gross: 0,
   insurance: 0,
+  unionFee: 0,
   beforeTax: 0,
   deduction: 0,
   taxableIncome: 0,
@@ -273,6 +304,10 @@ const results = ref({
 // Constants
 const BASE_SALARY = 2340000 // Lương cơ sở
 const INSURANCE_RATE = 0.105 // 10.5% bảo hiểm
+const UNION_FEE_RATES = {
+  old: 0.01,  // 1% trước 1/7/2025
+  new: 0.005  // 0.5% từ 1/7/2025
+}
 
 // Deduction rates based on regulation
 const DEDUCTION_RATES = {
@@ -290,6 +325,7 @@ const DEDUCTION_RATES = {
 const baseSalary = computed(() => BASE_SALARY)
 const baseDeduction = computed(() => DEDUCTION_RATES[regulation.value].base)
 const dependentDeduction = computed(() => DEDUCTION_RATES[regulation.value].dependent)
+const currentUnionFeeRate = computed(() => UNION_FEE_RATES[unionFeeRate.value])
 
 // Tax brackets (bậc thuế lũy tiến)
 const TAX_BRACKETS = [
@@ -363,8 +399,11 @@ const calculateGrossToNet = () => {
   const insuranceBase = insuranceType.value === 'official' ? gross : (parseFloat(customInsurance.value) || gross)
   const insurance = Math.round(insuranceBase * INSURANCE_RATE)
   
+  // Calculate union fee
+  const unionFee = Math.round(insuranceBase * currentUnionFeeRate.value)
+  
   // Calculate income before tax
-  const beforeTax = gross - insurance
+  const beforeTax = gross - insurance - unionFee
   
   // Get current deduction rates
   const currentBaseDeduction = baseDeduction.value
@@ -380,11 +419,12 @@ const calculateGrossToNet = () => {
   const tax = calculateTax(taxableIncome)
   
   // Calculate net income
-  const net = gross - insurance - tax
+  const net = gross - insurance - unionFee - tax
   
   results.value = {
     gross,
     insurance,
+    unionFee,
     beforeTax,
     deduction: totalDeduction,
     taxableIncome,
@@ -415,11 +455,12 @@ const calculateNetToGross = () => {
   while (iteration < maxIterations) {
     const insuranceBase = insuranceType.value === 'official' ? gross : (parseFloat(customInsurance.value) || gross)
     const insurance = insuranceBase * INSURANCE_RATE
-    const beforeTax = gross - insurance
+    const unionFee = insuranceBase * currentUnionFeeRate.value
+    const beforeTax = gross - insurance - unionFee
     const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
     const taxableIncome = Math.max(0, beforeTax - totalDeduction)
     const tax = calculateTax(taxableIncome)
-    const calculatedNet = gross - insurance - tax
+    const calculatedNet = gross - insurance - unionFee - tax
     
     const difference = targetNet - calculatedNet
     
@@ -428,6 +469,7 @@ const calculateNetToGross = () => {
       results.value = {
         gross: Math.round(gross),
         insurance: Math.round(insurance),
+        unionFee: Math.round(unionFee),
         beforeTax: Math.round(beforeTax),
         deduction: totalDeduction,
         taxableIncome: Math.round(taxableIncome),
