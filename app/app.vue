@@ -1,48 +1,48 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="min-h-screen bg-gray-50 py-4 sm:py-8 px-3 sm:px-4">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-2xl font-bold text-green-600 mb-6">
+      <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
+        <h1 class="text-lg sm:text-2xl font-bold text-green-600 mb-4 sm:mb-6 leading-tight">
           Công cụ tính lương Gross sang Net và ngược lại [Chuẩn 2025]
         </h1>
 
         <!-- Regulation Selection -->
-        <div class="mb-6">
-          <p class="font-medium mb-3">Áp dụng quy định:</p>
-          <div class="flex flex-wrap gap-4">
+        <div class="mb-4 sm:mb-6">
+          <p class="font-medium mb-3 text-sm sm:text-base">Áp dụng quy định:</p>
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="regulation"
                 value="2024"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700">Từ 01/07/2024 - 30/06/2025</span>
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">Từ 01/07/2024 - 30/06/2025</span>
             </label>
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="regulation"
                 value="2025"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700">Từ 01/07/2025 - 31/12/2025</span>
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">Từ 01/07/2025 - 31/12/2025</span>
             </label>
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="regulation"
                 value="2026"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700 font-semibold text-green-600">Từ 01/01/2026 (Mới nhất)</span>
+              <span class="ml-2 text-gray-700 font-semibold text-green-600 text-sm sm:text-base">Từ 01/01/2026 (Mới nhất)</span>
             </label>
           </div>
         </div>
 
         <!-- Info Text -->
-        <div class="space-y-2 text-sm text-gray-600 mb-6">
+        <div class="space-y-2 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
           <p v-if="regulation === '2024'">
             Áp dụng mức lương cơ sở mới nhất có hiệu lực từ ngày 01/07/2024 (Theo Nghị định số 73/2024/NĐ-CP)
           </p>
@@ -65,37 +65,39 @@
         </div>
 
         <!-- Summary Info -->
-        <div class="bg-gray-50 rounded-lg p-4 grid grid-cols-3 gap-4 mb-6">
-          <div>
-            <p class="text-sm text-gray-600 mb-1">Lương cơ sở:</p>
-            <p class="text-lg font-semibold text-green-600">{{ formatCurrency(baseSalary) }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-600 mb-1">Giảm trừ gia cảnh bản thân:</p>
-            <p class="text-lg font-semibold text-green-600">{{ formatCurrency(baseDeduction) }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-600 mb-1">Người phụ thuộc:</p>
-            <p class="text-lg font-semibold text-green-600">{{ formatCurrency(dependentDeduction) }}</p>
+        <div class="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+          <div class="grid grid-cols-3 gap-2 sm:gap-4">
+            <div class="text-center">
+              <p class="text-[10px] sm:text-sm text-gray-600 mb-1 leading-tight">Lương cơ sở:</p>
+              <p class="text-sm sm:text-lg font-semibold text-green-600">{{ formatCurrency(baseSalary) }}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-[10px] sm:text-sm text-gray-600 mb-1 leading-tight">Giảm trừ gia cảnh bản thân:</p>
+              <p class="text-sm sm:text-lg font-semibold text-green-600">{{ formatCurrency(baseDeduction) }}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-[10px] sm:text-sm text-gray-600 mb-1 leading-tight">Người phụ thuộc:</p>
+              <p class="text-sm sm:text-lg font-semibold text-green-600">{{ formatCurrency(dependentDeduction) }}</p>
+            </div>
           </div>
         </div>
 
         <!-- Input Forms -->
-        <div class="grid grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
           <!-- Thu nhập -->
           <div>
             <label class="block text-sm font-medium mb-2">Thu Nhập:</label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600">$</span>
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600 text-sm">$</span>
               <input
                 type="text"
                 v-model="formattedIncome"
                 @input="handleIncomeInput"
                 @focus="handleFocus"
-                class="w-full pl-8 pr-16 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                class="w-full pl-8 pr-16 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="0"
               />
-              <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">(VNĐ)</span>
+              <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">(VNĐ)</span>
             </div>
           </div>
 
@@ -104,7 +106,7 @@
             <label class="block text-sm font-medium mb-2">Số người phụ thuộc:</label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </span>
@@ -112,107 +114,107 @@
                 type="number"
                 v-model="dependents"
                 min="0"
-                class="w-full pl-10 pr-20 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                class="w-full pl-10 pr-20 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="0"
               />
-              <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">(Người)</span>
+              <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">(Người)</span>
             </div>
           </div>
         </div>
 
         <!-- Mức lương đóng bảo hiểm -->
-        <div class="mb-6">
-          <label class="block text-sm font-medium mb-3">Mức lương đóng bảo hiểm:</label>
-          <div class="flex flex-wrap gap-6">
+        <div class="mb-4 sm:mb-6">
+          <label class="block text-xs sm:text-sm font-medium mb-3">Mức lương đóng bảo hiểm:</label>
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-6">
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="insuranceType"
                 value="official"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700">Trên lương chính thức</span>
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">Trên lương chính thức</span>
             </label>
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="insuranceType"
                 value="other"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700">Khác:</span>
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">Khác:</span>
             </label>
-            <div v-if="insuranceType === 'other'" class="relative flex-1 max-w-xs">
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600">$</span>
+            <div v-if="insuranceType === 'other'" class="relative w-full sm:flex-1 sm:max-w-xs mt-2 sm:mt-0">
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600 text-sm">$</span>
               <input
                 type="text"
                 v-model="formattedCustomInsurance"
                 @input="handleCustomInsuranceInput"
                 @focus="handleFocus"
-                class="w-full pl-8 pr-16 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                class="w-full pl-8 pr-16 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="0"
               />
-              <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">(VNĐ)</span>
+              <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">(VNĐ)</span>
             </div>
           </div>
         </div>
 
         <!-- Vùng -->
-        <div class="mb-6">
-          <label class="block text-sm font-medium mb-3">
-            Vùng: <span class="text-red-500">(Giải thích)</span>
+        <div class="mb-4 sm:mb-6">
+          <label class="block text-xs sm:text-sm font-medium mb-3">
+            Vùng: <span class="text-red-500 text-xs">(Giải thích)</span>
           </label>
-          <div class="flex flex-wrap gap-6">
+          <div class="grid grid-cols-4 gap-3 sm:flex sm:flex-wrap sm:gap-6">
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="region"
                 value="1"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700">I</span>
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">I</span>
             </label>
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="region"
                 value="2"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700">II</span>
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">II</span>
             </label>
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="region"
                 value="3"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700">III</span>
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">III</span>
             </label>
             <label class="flex items-center cursor-pointer">
               <input
                 type="radio"
                 v-model="region"
                 value="4"
-                class="w-4 h-4 text-green-600 focus:ring-green-500"
+                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-700">IV</span>
+              <span class="ml-2 text-gray-700 text-sm sm:text-base">IV</span>
             </label>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex justify-center gap-4">
+        <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
           <button
             @click="calculateGrossToNet"
-            class="px-8 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors shadow-md"
+            class="w-full sm:w-auto px-6 sm:px-8 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors shadow-md text-sm sm:text-base"
           >
             GROSS → NET
           </button>
           <button
             @click="calculateNetToGross"
-            class="px-8 py-3 bg-white text-green-600 font-semibold rounded-md border-2 border-green-600 hover:bg-green-50 transition-colors shadow-md"
+            class="w-full sm:w-auto px-6 sm:px-8 py-3 bg-white text-green-600 font-semibold rounded-md border-2 border-green-600 hover:bg-green-50 transition-colors shadow-md text-sm sm:text-base"
           >
             NET → GROSS
           </button>
@@ -220,36 +222,36 @@
       </div>
 
       <!-- Results Section -->
-      <div v-if="showResults" class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Kết quả tính toán</h2>
-        <div class="space-y-3">
-          <div class="flex justify-between py-2 border-b">
+      <div v-if="showResults" class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-4">Kết quả tính toán</h2>
+        <div class="space-y-2 sm:space-y-3">
+          <div class="flex justify-between py-2 border-b text-sm sm:text-base">
             <span class="text-gray-600">Lương Gross:</span>
             <span class="font-semibold">{{ formatCurrency(results.gross) }}</span>
           </div>
-          <div class="flex justify-between py-2 border-b">
+          <div class="flex justify-between py-2 border-b text-sm sm:text-base">
             <span class="text-gray-600">Bảo hiểm (10.5%):</span>
             <span class="font-semibold text-red-600">-{{ formatCurrency(results.insurance) }}</span>
           </div>
-          <div class="flex justify-between py-2 border-b">
+          <div class="flex justify-between py-2 border-b text-sm sm:text-base">
             <span class="text-gray-600">Thu nhập trước thuế:</span>
             <span class="font-semibold">{{ formatCurrency(results.beforeTax) }}</span>
           </div>
-          <div class="flex justify-between py-2 border-b">
+          <div class="flex justify-between py-2 border-b text-sm sm:text-base">
             <span class="text-gray-600">Giảm trừ gia cảnh:</span>
             <span class="font-semibold text-red-600">-{{ formatCurrency(results.deduction) }}</span>
           </div>
-          <div class="flex justify-between py-2 border-b">
+          <div class="flex justify-between py-2 border-b text-sm sm:text-base">
             <span class="text-gray-600">Thu nhập tính thuế:</span>
             <span class="font-semibold">{{ formatCurrency(results.taxableIncome) }}</span>
           </div>
-          <div class="flex justify-between py-2 border-b">
+          <div class="flex justify-between py-2 border-b text-sm sm:text-base">
             <span class="text-gray-600">Thuế TNCN:</span>
             <span class="font-semibold text-red-600">-{{ formatCurrency(results.tax) }}</span>
           </div>
           <div class="flex justify-between py-3 bg-green-50 rounded px-2 mt-2">
-            <span class="text-lg font-bold text-gray-800">Lương Net:</span>
-            <span class="text-lg font-bold text-green-600">{{ formatCurrency(results.net) }}</span>
+            <span class="text-base sm:text-lg font-bold text-gray-800">Lương Net:</span>
+            <span class="text-base sm:text-lg font-bold text-green-600">{{ formatCurrency(results.net) }}</span>
           </div>
         </div>
       </div>
