@@ -237,6 +237,21 @@
           </div>
         </div>
 
+        <!-- Comparison Toggle -->
+        <div class="mb-4 sm:mb-6">
+          <label class="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              v-model="showComparison"
+              class="w-4 h-4 text-green-600 focus:ring-green-500 rounded"
+            />
+            <span class="ml-2 text-sm sm:text-base text-gray-700">
+              So sánh chênh lệch giữa 2025 và 2026
+              <span class="text-xs text-gray-500">(Xem tác động của quy định mới)</span>
+            </span>
+          </label>
+        </div>
+
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
           <button
@@ -296,6 +311,75 @@
           </div>
         </div>
       </div>
+
+      <!-- Comparison Section -->
+      <div v-if="showResults && showComparison && comparisonResults.results2025 && comparisonResults.results2026" class="bg-white rounded-lg shadow-md p-4 sm:p-6 mt-4 sm:mt-6">
+        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-4">
+          So sánh quy định 2025 vs 2026
+          <span class="text-sm font-normal text-gray-600">(Cùng mức lương Gross)</span>
+        </h2>
+        
+        <!-- Comparison Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b-2 border-gray-300">
+                <th class="text-left py-3 px-2">Hạng mục</th>
+                <th class="text-right py-3 px-2">2025</th>
+                <th class="text-right py-3 px-2">2026</th>
+                <th class="text-right py-3 px-2 text-green-600">Chênh lệch</th>
+              </tr>
+            </thead>
+            <tbody class="text-xs sm:text-sm">
+              <tr class="border-b">
+                <td class="py-2 px-2 text-gray-600">Giảm trừ gia cảnh</td>
+                <td class="py-2 px-2 text-right">{{ formatCurrency(comparisonResults.results2025.deduction) }}</td>
+                <td class="py-2 px-2 text-right">{{ formatCurrency(comparisonResults.results2026.deduction) }}</td>
+                <td class="py-2 px-2 text-right font-semibold text-green-600">
+                  +{{ formatCurrency(comparisonResults.results2026.deduction - comparisonResults.results2025.deduction) }}
+                </td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-2 text-gray-600">Thu nhập tính thuế</td>
+                <td class="py-2 px-2 text-right">{{ formatCurrency(comparisonResults.results2025.taxableIncome) }}</td>
+                <td class="py-2 px-2 text-right">{{ formatCurrency(comparisonResults.results2026.taxableIncome) }}</td>
+                <td class="py-2 px-2 text-right font-semibold" :class="comparisonResults.results2026.taxableIncome < comparisonResults.results2025.taxableIncome ? 'text-green-600' : 'text-red-600'">
+                  {{ comparisonResults.results2026.taxableIncome - comparisonResults.results2025.taxableIncome >= 0 ? '+' : '' }}{{ formatCurrency(comparisonResults.results2026.taxableIncome - comparisonResults.results2025.taxableIncome) }}
+                </td>
+              </tr>
+              <tr class="border-b">
+                <td class="py-2 px-2 text-gray-600">Thuế TNCN</td>
+                <td class="py-2 px-2 text-right">{{ formatCurrency(comparisonResults.results2025.tax) }}</td>
+                <td class="py-2 px-2 text-right">{{ formatCurrency(comparisonResults.results2026.tax) }}</td>
+                <td class="py-2 px-2 text-right font-semibold" :class="comparisonResults.results2026.tax < comparisonResults.results2025.tax ? 'text-green-600' : 'text-red-600'">
+                  {{ comparisonResults.results2026.tax - comparisonResults.results2025.tax >= 0 ? '+' : '' }}{{ formatCurrency(comparisonResults.results2026.tax - comparisonResults.results2025.tax) }}
+                </td>
+              </tr>
+              <tr class="border-b-2 border-gray-300 bg-green-50">
+                <td class="py-3 px-2 font-bold text-gray-800">Lương Net</td>
+                <td class="py-3 px-2 text-right font-bold">{{ formatCurrency(comparisonResults.results2025.net) }}</td>
+                <td class="py-3 px-2 text-right font-bold">{{ formatCurrency(comparisonResults.results2026.net) }}</td>
+                <td class="py-3 px-2 text-right font-bold text-green-600">
+                  +{{ formatCurrency(comparisonResults.results2026.net - comparisonResults.results2025.net) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Summary -->
+        <div class="mt-4 p-4 bg-green-50 rounded-lg">
+          <p class="text-sm sm:text-base text-gray-700">
+            <span class="font-semibold text-green-600">Kết luận:</span>
+            Với cùng mức lương Gross, áp dụng quy định mới từ 01/01/2026, bạn sẽ nhận được 
+            <span class="font-bold text-green-600">{{ formatCurrency(comparisonResults.results2026.net - comparisonResults.results2025.net) }}</span>
+            nhiều hơn mỗi tháng nhờ mức giảm trừ gia cảnh tăng lên.
+            <span class="text-xs block mt-2 text-gray-600">
+              (Tương đương tăng {{ ((comparisonResults.results2026.net - comparisonResults.results2025.net) / comparisonResults.results2025.net * 100).toFixed(2) }}% lương Net)
+            </span>
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -316,6 +400,7 @@ const customInsurance = ref('')
 const formattedCustomInsurance = ref('')
 const region = ref('1')
 const showResults = ref(false)
+const showComparison = ref(false)
 const results = ref({
   gross: 0,
   insurance: 0,
@@ -326,6 +411,10 @@ const results = ref({
   taxableIncome: 0,
   tax: 0,
   net: 0
+})
+const comparisonResults = ref({
+  results2025: null,
+  results2026: null
 })
 
 // Constants
@@ -421,51 +510,29 @@ const calculateTax = (taxableIncome) => {
   return Math.round(tax)
 }
 
-// Calculate Gross to Net
-const calculateGrossToNet = () => {
-  const gross = parseFloat(income.value) || 0
-  if (gross === 0) {
-    alert('Vui lòng nhập thu nhập')
-    return
-  }
-  
-  // Calculate insurance
+// Helper function to calculate result for a specific regulation
+const calculateForRegulation = (gross, regulationYear) => {
   const insuranceBase = insuranceType.value === 'official' ? gross : (parseFloat(customInsurance.value) || gross)
   const insurance = Math.round(insuranceBase * INSURANCE_RATE)
   
-  // Calculate union fee (không vượt quá 1% lương cơ sở)
   const unionFee = Math.round(Math.min(
     insuranceBase * currentUnionFeeRate.value,
     BASE_SALARY * 0.1
   ))
   
-  // Calculate income before tax (gross - insurance - union fee)
   const beforeTax = gross - insurance - unionFee
-  
-  // Get meal allowance (tax-exempt) - phụ cấp tiền ăn không tính thuế
   const mealAllowanceAmount = parseFloat(mealAllowance.value) || 0
-  
-  // Thu nhập chịu thuế = Tổng lương - tiền ăn không tính thuế
   const taxableBase = gross - mealAllowanceAmount
   
-  // Get current deduction rates
-  const currentBaseDeduction = baseDeduction.value
-  const currentDependentDeduction = dependentDeduction.value
+  // Get deduction for specific regulation
+  const deductionRates = DEDUCTION_RATES[regulationYear]
+  const totalDeduction = deductionRates.base + (dependents.value * deductionRates.dependent)
   
-  // Calculate total deduction (personal + family)
-  const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
-  
-  // Thu nhập tính thuế = Thu nhập chịu thuế - Bảo hiểm - Giảm trừ bản thân - Giảm trừ gia cảnh
-  // Lưu ý: Công đoàn phí KHÔNG được trừ vào thu nhập tính thuế
   const taxableIncome = Math.max(0, taxableBase - insurance - totalDeduction)
-  
-  // Calculate tax
   const tax = calculateTax(taxableIncome)
-  
-  // Calculate net income
   const net = gross - insurance - unionFee - tax
   
-  results.value = {
+  return {
     gross,
     insurance,
     unionFee,
@@ -475,6 +542,26 @@ const calculateGrossToNet = () => {
     taxableIncome,
     tax,
     net
+  }
+}
+
+// Calculate Gross to Net
+const calculateGrossToNet = () => {
+  const gross = parseFloat(income.value) || 0
+  if (gross === 0) {
+    alert('Vui lòng nhập thu nhập')
+    return
+  }
+  
+  // Calculate for current regulation
+  results.value = calculateForRegulation(gross, regulation.value)
+  
+  // Calculate comparison if enabled
+  if (showComparison.value) {
+    comparisonResults.value = {
+      results2025: calculateForRegulation(gross, '2025'),
+      results2026: calculateForRegulation(gross, '2026')
+    }
   }
   
   showResults.value = true
@@ -536,8 +623,9 @@ const calculateNetToGross = () => {
     
     if (Math.abs(difference) < tolerance) {
       // Found accurate solution
+      const finalGross = Math.round(gross)
       results.value = {
-        gross: Math.round(gross),
+        gross: finalGross,
         insurance: Math.round(result.insurance),
         unionFee: Math.round(result.unionFee),
         beforeTax: Math.round(result.beforeTax),
@@ -547,6 +635,15 @@ const calculateNetToGross = () => {
         tax: Math.round(result.tax),
         net: Math.round(result.net)
       }
+      
+      // Calculate comparison if enabled
+      if (showComparison.value) {
+        comparisonResults.value = {
+          results2025: calculateForRegulation(finalGross, '2025'),
+          results2026: calculateForRegulation(finalGross, '2026')
+        }
+      }
+      
       showResults.value = true
       return
     }
