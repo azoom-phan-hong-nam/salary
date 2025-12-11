@@ -385,7 +385,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 // State
 const regulation = ref('2026')
@@ -485,6 +485,15 @@ const handleMealAllowanceInput = (event) => {
 const handleFocus = (event) => {
   event.target.select()
 }
+
+// Auto-fill custom insurance with income when switching to 'other'
+watch(insuranceType, (newValue, oldValue) => {
+  if (newValue === 'other' && income.value) {
+    // Auto-fill with current income value
+    customInsurance.value = income.value
+    formattedCustomInsurance.value = formatNumberWithSeparator(income.value)
+  }
+})
 
 // Calculate tax based on progressive tax brackets
 const calculateTax = (taxableIncome) => {
