@@ -27,24 +27,40 @@
                 value="2025"
                 class="w-4 h-4 text-green-600 focus:ring-green-500"
               />
-              <span class="ml-2 text-gray-700">Từ 01/07/2025 (Mới nhất)</span>
+              <span class="ml-2 text-gray-700">Từ 01/07/2025 - 31/12/2025</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                v-model="regulation"
+                value="2026"
+                class="w-4 h-4 text-green-600 focus:ring-green-500"
+              />
+              <span class="ml-2 text-gray-700 font-semibold text-green-600">Từ 01/01/2026 (Mới nhất)</span>
             </label>
           </div>
         </div>
 
         <!-- Info Text -->
         <div class="space-y-2 text-sm text-gray-600 mb-6">
-          <p>
+          <p v-if="regulation === '2024'">
             Áp dụng mức lương cơ sở mới nhất có hiệu lực từ ngày 01/07/2024 (Theo Nghị định số 73/2024/NĐ-CP)
           </p>
-          <p>
+          <p v-if="regulation === '2025'">
             Áp dụng
             <a href="#" class="text-green-600 underline">mức lương tối thiểu vùng</a>
             mới nhất có hiệu lực từ ngày 01/07/2025 (Theo Nghị định 128/2025/NĐ-CP)
           </p>
-          <p>
-            Áp dụng mức giảm trừ gia cảnh mới nhất 11 triệu đồng/tháng (132 triệu đồng/năm) với người nộp thuế và 4,4 triệu
+          <p v-if="regulation === '2024' || regulation === '2025'">
+            Áp dụng mức giảm trừ gia cảnh 11 triệu đồng/tháng (132 triệu đồng/năm) với người nộp thuế và 4,4 triệu
             đồng/tháng với mỗi người phụ thuộc (Theo Nghị quyết số 954/2020/UBTVQH14)
+          </p>
+          <p v-if="regulation === '2026'" class="font-semibold text-green-700">
+            Áp dụng mức giảm trừ gia cảnh 15,5 triệu đồng/tháng (186 triệu đồng/năm) với người nộp thuế và 6,2 triệu
+            đồng/tháng với mỗi người phụ thuộc (Theo Nghị quyết số 110/2025/UBTVQH15)
+          </p>
+          <p v-if="regulation === '2026'">
+            Áp dụng mức giảm trừ gia cảnh mới nhất có hiệu lực từ ngày 01/01/2026 (Tăng 40,91% so với mức hiện hành)
           </p>
         </div>
 
@@ -52,15 +68,15 @@
         <div class="bg-gray-50 rounded-lg p-4 grid grid-cols-3 gap-4 mb-6">
           <div>
             <p class="text-sm text-gray-600 mb-1">Lương cơ sở:</p>
-            <p class="text-lg font-semibold text-green-600">2,340,000đ</p>
+            <p class="text-lg font-semibold text-green-600">{{ formatCurrency(baseSalary) }}</p>
           </div>
           <div>
             <p class="text-sm text-gray-600 mb-1">Giảm trừ gia cảnh bản thân:</p>
-            <p class="text-lg font-semibold text-green-600">11,000,000đ</p>
+            <p class="text-lg font-semibold text-green-600">{{ formatCurrency(baseDeduction) }}</p>
           </div>
           <div>
             <p class="text-sm text-gray-600 mb-1">Người phụ thuộc:</p>
-            <p class="text-lg font-semibold text-green-600">4,400,000đ</p>
+            <p class="text-lg font-semibold text-green-600">{{ formatCurrency(dependentDeduction) }}</p>
           </div>
         </div>
 
@@ -242,7 +258,7 @@
 import { ref, computed } from 'vue'
 
 // State
-const regulation = ref('2025')
+const regulation = ref('2026')
 const income = ref('')
 const dependents = ref(0)
 const insuranceType = ref('official')
@@ -260,9 +276,29 @@ const results = ref({
 })
 
 // Constants
-const BASE_DEDUCTION = 11000000 // Giảm trừ gia cảnh bản thân
-const DEPENDENT_DEDUCTION = 4400000 // Giảm trừ cho mỗi người phụ thuộc
+const BASE_SALARY = 2340000 // Lương cơ sở
 const INSURANCE_RATE = 0.105 // 10.5% bảo hiểm
+
+// Deduction rates based on regulation
+const DEDUCTION_RATES = {
+  '2024': {
+    base: 11000000,
+    dependent: 4400000
+  },
+  '2025': {
+    base: 11000000,
+    dependent: 4400000
+  },
+  '2026': {
+    base: 15500000,
+    dependent: 6200000
+  }
+}
+
+// Computed properties for current deductions
+const baseSalary = computed(() => BASE_SALARY)
+const baseDeduction = computed(() => DEDUCTION_RATES[regulation.value].base)
+const dependentDeduction = computed(() => DEDUCTION_RATES[regulation.value].dependent)
 
 // Tax brackets (bậc thuế lũy tiến)
 const TAX_BRACKETS = [
@@ -320,8 +356,12 @@ const calculateGrossToNet = () => {
   // Calculate income before tax
   const beforeTax = gross - insurance
   
+  // Get current deduction rates
+  const currentBaseDeduction = baseDeduction.value
+  const currentDependentDeduction = dependentDeduction.value
+  
   // Calculate total deduction
-  const totalDeduction = BASE_DEDUCTION + (dependents.value * DEPENDENT_DEDUCTION)
+  const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
   
   // Calculate taxable income
   const taxableIncome = Math.max(0, beforeTax - totalDeduction)
@@ -353,6 +393,10 @@ const calculateNetToGross = () => {
     return
   }
   
+  // Get current deduction rates
+  const currentBaseDeduction = baseDeduction.value
+  const currentDependentDeduction = dependentDeduction.value
+  
   // Use iterative approach to find gross
   let gross = targetNet * 1.3 // Initial estimate
   let iteration = 0
@@ -362,7 +406,7 @@ const calculateNetToGross = () => {
     const insuranceBase = insuranceType.value === 'official' ? gross : (parseFloat(customInsurance.value) || gross)
     const insurance = insuranceBase * INSURANCE_RATE
     const beforeTax = gross - insurance
-    const totalDeduction = BASE_DEDUCTION + (dependents.value * DEPENDENT_DEDUCTION)
+    const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
     const taxableIncome = Math.max(0, beforeTax - totalDeduction)
     const tax = calculateTax(taxableIncome)
     const calculatedNet = gross - insurance - tax
