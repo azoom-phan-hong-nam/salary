@@ -15,15 +15,6 @@
               <input
                 type="radio"
                 v-model="regulation"
-                value="2024"
-                class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
-              />
-              <span class="ml-2 text-gray-700 text-sm sm:text-base">Từ 01/07/2024 - 30/06/2025</span>
-            </label>
-            <label class="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                v-model="regulation"
                 value="2025"
                 class="w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
               />
@@ -43,15 +34,12 @@
 
         <!-- Info Text -->
         <div class="space-y-2 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
-          <p v-if="regulation === '2024'">
-            Áp dụng mức lương cơ sở mới nhất có hiệu lực từ ngày 01/07/2024 (Theo Nghị định số 73/2024/NĐ-CP)
-          </p>
           <p v-if="regulation === '2025'">
             Áp dụng
             <a href="#" class="text-green-600 underline">mức lương tối thiểu vùng</a>
             mới nhất có hiệu lực từ ngày 01/07/2025 (Theo Nghị định 128/2025/NĐ-CP)
           </p>
-          <p v-if="regulation === '2024' || regulation === '2025'">
+          <p v-if="regulation === '2025'">
             Áp dụng mức giảm trừ gia cảnh 11 triệu đồng/tháng (132 triệu đồng/năm) với người nộp thuế và 4,4 triệu
             đồng/tháng với mỗi người phụ thuộc (Theo Nghị quyết số 954/2020/UBTVQH14)
           </p>
@@ -288,10 +276,6 @@ const INSURANCE_RATE = 0.105 // 10.5% bảo hiểm
 
 // Deduction rates based on regulation
 const DEDUCTION_RATES = {
-  '2024': {
-    base: 11000000,
-    dependent: 4400000
-  },
   '2025': {
     base: 11000000,
     dependent: 4400000
