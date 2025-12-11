@@ -110,6 +110,26 @@
           </div>
         </div>
 
+        <!-- Phụ cấp tiền ăn miễn thuế -->
+        <div class="mb-4 sm:mb-6">
+          <label class="block text-sm font-medium mb-2">
+            Phụ cấp tiền ăn miễn thuế:
+            <span class="text-xs text-gray-500 font-normal">(Khoản này được trừ vào thu nhập tính thuế)</span>
+          </label>
+          <div class="relative max-w-md">
+            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600 text-sm">$</span>
+            <input
+              type="text"
+              v-model="formattedMealAllowance"
+              @input="handleMealAllowanceInput"
+              @focus="handleFocus"
+              class="w-full pl-8 pr-16 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="730.000"
+            />
+            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">(VNĐ)</span>
+          </div>
+        </div>
+
         <!-- Mức phí công đoàn -->
         <div class="mb-4 sm:mb-6">
           <label class="block text-xs sm:text-sm font-medium mb-3">Mức phí công đoàn:</label>
@@ -259,6 +279,10 @@
             <span class="font-semibold text-red-600">-{{ formatCurrency(results.deduction) }}</span>
           </div>
           <div class="flex justify-between py-2 border-b text-sm sm:text-base">
+            <span class="text-gray-600">Phụ cấp tiền ăn (miễn thuế):</span>
+            <span class="font-semibold text-red-600">-{{ formatCurrency(results.mealAllowance) }}</span>
+          </div>
+          <div class="flex justify-between py-2 border-b text-sm sm:text-base">
             <span class="text-gray-600">Thu nhập tính thuế:</span>
             <span class="font-semibold">{{ formatCurrency(results.taxableIncome) }}</span>
           </div>
@@ -284,6 +308,8 @@ const regulation = ref('2026')
 const income = ref('')
 const formattedIncome = ref('')
 const dependents = ref(0)
+const mealAllowance = ref('730000') // Phụ cấp tiền ăn miễn thuế
+const formattedMealAllowance = ref('730.000')
 const unionFeeRate = ref('new') // Mặc định là mức mới từ 1/7/2025
 const insuranceType = ref('official')
 const customInsurance = ref('')
@@ -296,6 +322,7 @@ const results = ref({
   unionFee: 0,
   beforeTax: 0,
   deduction: 0,
+  mealAllowance: 0,
   taxableIncome: 0,
   tax: 0,
   net: 0
@@ -358,6 +385,13 @@ const handleCustomInsuranceInput = (event) => {
   formattedCustomInsurance.value = formatNumberWithSeparator(value)
 }
 
+// Handle meal allowance input with mask
+const handleMealAllowanceInput = (event) => {
+  let value = event.target.value.replace(/[^\d]/g, '')
+  mealAllowance.value = value
+  formattedMealAllowance.value = formatNumberWithSeparator(value)
+}
+
 // Handle focus to select all
 const handleFocus = (event) => {
   event.target.select()
@@ -412,8 +446,11 @@ const calculateGrossToNet = () => {
   // Calculate total deduction
   const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
   
-  // Calculate taxable income
-  const taxableIncome = Math.max(0, beforeTax - totalDeduction)
+  // Get meal allowance (tax-exempt)
+  const mealAllowanceAmount = parseFloat(mealAllowance.value) || 0
+  
+  // Calculate taxable income (after deducting meal allowance)
+  const taxableIncome = Math.max(0, beforeTax - totalDeduction - mealAllowanceAmount)
   
   // Calculate tax
   const tax = calculateTax(taxableIncome)
@@ -427,6 +464,7 @@ const calculateGrossToNet = () => {
     unionFee,
     beforeTax,
     deduction: totalDeduction,
+    mealAllowance: mealAllowanceAmount,
     taxableIncome,
     tax,
     net
@@ -458,7 +496,8 @@ const calculateNetToGross = () => {
     const unionFee = insuranceBase * currentUnionFeeRate.value
     const beforeTax = gross - insurance - unionFee
     const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
-    const taxableIncome = Math.max(0, beforeTax - totalDeduction)
+    const mealAllowanceAmount = parseFloat(mealAllowance.value) || 0
+    const taxableIncome = Math.max(0, beforeTax - totalDeduction - mealAllowanceAmount)
     const tax = calculateTax(taxableIncome)
     const calculatedNet = gross - insurance - unionFee - tax
     
@@ -472,6 +511,7 @@ const calculateNetToGross = () => {
         unionFee: Math.round(unionFee),
         beforeTax: Math.round(beforeTax),
         deduction: totalDeduction,
+        mealAllowance: mealAllowanceAmount,
         taxableIncome: Math.round(taxableIncome),
         tax: Math.round(tax),
         net: Math.round(calculatedNet)
