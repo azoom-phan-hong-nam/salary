@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
         <h1 class="text-lg sm:text-2xl font-bold text-green-600 mb-4 sm:mb-6 leading-tight">
-          Công cụ tính lương Gross sang Net và ngược lại [Chuẩn 2025]
+          Công cụ tính lương Gross sang Net và ngược lại [Chuẩn cơm mẹ nấu]
         </h1>
 
         <!-- Regulation Selection -->
@@ -433,24 +433,31 @@ const calculateGrossToNet = () => {
   const insuranceBase = insuranceType.value === 'official' ? gross : (parseFloat(customInsurance.value) || gross)
   const insurance = Math.round(insuranceBase * INSURANCE_RATE)
   
-  // Calculate union fee
-  const unionFee = Math.round(insuranceBase * currentUnionFeeRate.value)
+  // Calculate union fee (không vượt quá 1% lương cơ sở)
+  const unionFee = Math.round(Math.min(
+    insuranceBase * currentUnionFeeRate.value,
+    BASE_SALARY * 0.1
+  ))
   
-  // Calculate income before tax
+  // Calculate income before tax (gross - insurance - union fee)
   const beforeTax = gross - insurance - unionFee
+  
+  // Get meal allowance (tax-exempt) - phụ cấp tiền ăn không tính thuế
+  const mealAllowanceAmount = parseFloat(mealAllowance.value) || 0
+  
+  // Thu nhập chịu thuế = Tổng lương - tiền ăn không tính thuế
+  const taxableBase = gross - mealAllowanceAmount
   
   // Get current deduction rates
   const currentBaseDeduction = baseDeduction.value
   const currentDependentDeduction = dependentDeduction.value
   
-  // Calculate total deduction
+  // Calculate total deduction (personal + family)
   const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
   
-  // Get meal allowance (tax-exempt)
-  const mealAllowanceAmount = parseFloat(mealAllowance.value) || 0
-  
-  // Calculate taxable income (after deducting meal allowance)
-  const taxableIncome = Math.max(0, beforeTax - totalDeduction - mealAllowanceAmount)
+  // Thu nhập tính thuế = Thu nhập chịu thuế - Bảo hiểm - Giảm trừ bản thân - Giảm trừ gia cảnh
+  // Lưu ý: Công đoàn phí KHÔNG được trừ vào thu nhập tính thuế
+  const taxableIncome = Math.max(0, taxableBase - insurance - totalDeduction)
   
   // Calculate tax
   const tax = calculateTax(taxableIncome)
@@ -484,44 +491,95 @@ const calculateNetToGross = () => {
   // Get current deduction rates
   const currentBaseDeduction = baseDeduction.value
   const currentDependentDeduction = dependentDeduction.value
+  const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
+  const mealAllowanceAmount = parseFloat(mealAllowance.value) || 0
   
-  // Use iterative approach to find gross
-  let gross = targetNet * 1.3 // Initial estimate
-  let iteration = 0
-  const maxIterations = 100
-  
-  while (iteration < maxIterations) {
+  // Helper function to calculate net from gross
+  const calculateNetFromGross = (gross) => {
     const insuranceBase = insuranceType.value === 'official' ? gross : (parseFloat(customInsurance.value) || gross)
     const insurance = insuranceBase * INSURANCE_RATE
-    const unionFee = insuranceBase * currentUnionFeeRate.value
-    const beforeTax = gross - insurance - unionFee
-    const totalDeduction = currentBaseDeduction + (dependents.value * currentDependentDeduction)
-    const mealAllowanceAmount = parseFloat(mealAllowance.value) || 0
-    const taxableIncome = Math.max(0, beforeTax - totalDeduction - mealAllowanceAmount)
+    const unionFee = Math.min(
+      insuranceBase * currentUnionFeeRate.value,
+      BASE_SALARY * 0.1
+    )
+    
+    // Thu nhập chịu thuế = Tổng lương - tiền ăn không tính thuế
+    const taxableBase = gross - mealAllowanceAmount
+    
+    // Thu nhập tính thuế = Thu nhập chịu thuế - Bảo hiểm - Giảm trừ (Công đoàn phí KHÔNG trừ)
+    const taxableIncome = Math.max(0, taxableBase - insurance - totalDeduction)
+    
     const tax = calculateTax(taxableIncome)
-    const calculatedNet = gross - insurance - unionFee - tax
+    const net = gross - insurance - unionFee - tax
     
-    const difference = targetNet - calculatedNet
+    return {
+      net,
+      insurance,
+      unionFee,
+      taxableIncome,
+      tax,
+      beforeTax: gross - insurance - unionFee
+    }
+  }
+  
+  // Use binary search combined with Newton's method for better convergence
+  let minGross = targetNet
+  let maxGross = targetNet * 3 // Wider range for safety
+  let gross = targetNet * 1.35 // Better initial estimate
+  let iteration = 0
+  const maxIterations = 150
+  const tolerance = 50 // Very tight tolerance
+  
+  while (iteration < maxIterations) {
+    const result = calculateNetFromGross(gross)
+    const difference = targetNet - result.net
     
-    if (Math.abs(difference) < 1000) {
-      // Close enough
+    if (Math.abs(difference) < tolerance) {
+      // Found accurate solution
       results.value = {
         gross: Math.round(gross),
-        insurance: Math.round(insurance),
-        unionFee: Math.round(unionFee),
-        beforeTax: Math.round(beforeTax),
+        insurance: Math.round(result.insurance),
+        unionFee: Math.round(result.unionFee),
+        beforeTax: Math.round(result.beforeTax),
         deduction: totalDeduction,
         mealAllowance: mealAllowanceAmount,
-        taxableIncome: Math.round(taxableIncome),
-        tax: Math.round(tax),
-        net: Math.round(calculatedNet)
+        taxableIncome: Math.round(result.taxableIncome),
+        tax: Math.round(result.tax),
+        net: Math.round(result.net)
       }
       showResults.value = true
       return
     }
     
-    // Adjust gross
-    gross += difference * 0.5
+    // Adjust search range and gross
+    if (result.net < targetNet) {
+      // Need higher gross
+      minGross = gross
+    } else {
+      // Need lower gross
+      maxGross = gross
+    }
+    
+    // Use aggressive Newton-like adjustment for first iterations, then switch to binary search
+    if (iteration < 20 && maxGross - minGross > 10000) {
+      // Calculate marginal rate (how much net changes per gross change)
+      const testGross = gross + 1000
+      const testResult = calculateNetFromGross(testGross)
+      const marginalRate = (testResult.net - result.net) / 1000
+      
+      if (marginalRate > 0.3) { // Reasonable marginal rate
+        gross += difference / marginalRate
+      } else {
+        gross = (minGross + maxGross) / 2
+      }
+    } else {
+      // Binary search for stability
+      gross = (minGross + maxGross) / 2
+    }
+    
+    // Keep within bounds
+    gross = Math.max(minGross, Math.min(maxGross, gross))
+    
     iteration++
   }
   
