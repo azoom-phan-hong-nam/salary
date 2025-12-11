@@ -89,8 +89,9 @@
               <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600">$</span>
               <input
                 type="text"
-                v-model="income"
-                @input="formatNumber"
+                v-model="formattedIncome"
+                @input="handleIncomeInput"
+                @focus="handleFocus"
                 class="w-full pl-8 pr-16 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="0"
               />
@@ -145,7 +146,9 @@
               <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600">$</span>
               <input
                 type="text"
-                v-model="customInsurance"
+                v-model="formattedCustomInsurance"
+                @input="handleCustomInsuranceInput"
+                @focus="handleFocus"
                 class="w-full pl-8 pr-16 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="0"
               />
@@ -260,9 +263,11 @@ import { ref, computed } from 'vue'
 // State
 const regulation = ref('2026')
 const income = ref('')
+const formattedIncome = ref('')
 const dependents = ref(0)
 const insuranceType = ref('official')
 const customInsurance = ref('')
+const formattedCustomInsurance = ref('')
 const region = ref('1')
 const showResults = ref(false)
 const results = ref({
@@ -311,10 +316,29 @@ const TAX_BRACKETS = [
   { limit: Infinity, rate: 0.35 }
 ]
 
-// Format number input
-const formatNumber = (event) => {
+// Format number with thousands separator
+const formatNumberWithSeparator = (num) => {
+  if (!num) return ''
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
+// Handle income input with mask
+const handleIncomeInput = (event) => {
   let value = event.target.value.replace(/[^\d]/g, '')
   income.value = value
+  formattedIncome.value = formatNumberWithSeparator(value)
+}
+
+// Handle custom insurance input with mask
+const handleCustomInsuranceInput = (event) => {
+  let value = event.target.value.replace(/[^\d]/g, '')
+  customInsurance.value = value
+  formattedCustomInsurance.value = formatNumberWithSeparator(value)
+}
+
+// Handle focus to select all
+const handleFocus = (event) => {
+  event.target.select()
 }
 
 // Calculate tax based on progressive tax brackets
