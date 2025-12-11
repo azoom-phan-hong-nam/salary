@@ -3,8 +3,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   
-  // Enable SSG for GitHub Pages
-  ssr: false,
+  // Enable SSR for proper meta tags (Facebook/SEO crawlers need this)
+  ssr: true,
   
   app: {
     // Set base URL for GitHub Pages (update with your repo name)
@@ -31,11 +31,17 @@ export default defineNuxtConfig({
         
         // Open Graph / Facebook
         { property: 'og:type', content: 'website' },
+        { property: 'og:url', content: 'https://azoom-phan-hong-nam.github.io/salary/' },
+        { property: 'og:site_name', content: 'Công cụ tính lương Gross Net' },
         { property: 'og:title', content: 'Công cụ tính lương Gross - Net 2025-2026' },
         { 
           property: 'og:description', 
           content: 'Tính lương Gross sang Net và ngược lại. Áp dụng mức giảm trừ gia cảnh mới nhất 15.5 triệu từ 01/01/2026. So sánh chênh lệch quy định 2025 vs 2026.' 
         },
+        { property: 'og:image', content: 'https://azoom-phan-hong-nam.github.io/salary/og-image.jpg' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:alt', content: 'Công cụ tính lương Gross Net 2025-2026' },
         { property: 'og:locale', content: 'vi_VN' },
         
         // Twitter
